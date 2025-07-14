@@ -32,25 +32,65 @@ const createProduct = async (req, res) => {
 
 const getAllProduct = async (req, res) => {
   try {
-    
     const query = req.query;
+    let filter = {};
 
-    const sort = JSON.parse(req.query.sort || "{}");
+    if (query.productName) {
+      filter.productName = {
+        $regex: query.productName,
+        $options: "i",
+      };
+    }
+    if (query.description) {
+      filter.description = {
+        $regex: query.description,
+        $options: "i",
+      };
+    }
+    if (query.gen) {
+      filter.gen = {
+        $in: query.gen
+          .split(",")
+          .filter(Boolean)
+          .map((n) => parseInt(n)),
+      };
+    }
+    if (query.ram) {
+      filter.ram = {
+        $in: query.ram
+          .split(",")
+          .filter(Boolean)
+          .map((n) => parseInt(n)),
+      };
+    }
+    if (query.rom) {
+      filter.rom = {
+        $in: query.rom
+          .split(",")
+          .filter(Boolean)
+          .map((n) => parseInt(n)),
+      };
+    }
+    if (query.brand) {
+      filter.brand = {
+        $in: query.brand.split(","),
+      };
+    }
+    if (query.price) {
+      const nums = query.price
+        .split(",")
+        .filter(Boolean)
+        .map((n) => parseInt(n));
+      const from = nums[0];
+      const to = nums[nums.length - 1];
 
-    console.log(sort);
-    const filter = {};
+      filter.price = {
+        $gte: from,
+        $lte: to,
+      };
+    }
 
-    //  if(req.query.brand){filter.brand = {$in :req.query.brand.split(',')} }
-
-    //  console.log(filter)
-
-    //  return res.send(filter).sort(sort)
-
-    // brand: "Acer";
-    // brand: {
-    //   $in: ["Acer", "Dell"];
-    // }
-    const data = await Product.find(filter).sort(sort).limit(5).skip(5);
+    const data = await Product.find(filter);
 
     res.status(200).json({ data });
   } catch (error) {
