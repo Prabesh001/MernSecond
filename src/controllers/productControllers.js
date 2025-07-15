@@ -84,10 +84,16 @@ const getAllProduct = async (req, res) => {
       const from = nums[0];
       const to = nums[nums.length - 1];
 
-      filter.price = {
-        $gte: from,
-        $lte: to,
-      };
+      if (nums.length > 1) {
+        filter.price = {
+          $gte: from,
+          $lte: to,
+        };
+      } else {
+        filter.price = {
+          $lte: from,
+        };
+      }
     }
 
     const data = await Product.find(filter);

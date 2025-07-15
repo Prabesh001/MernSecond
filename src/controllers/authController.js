@@ -1,6 +1,5 @@
 import User from "../models/User.js";
 import jwt from "jsonwebtoken";
-import otpGenerator from "otp-generator";
 import generateOtp from "../config/generateOtp.js";
 import Otp from "../models/Otp.js";
 
@@ -103,4 +102,64 @@ const forgotPassword = async (req, res) => {
   }
 };
 
-export { register, login, forgotPassword };
+const verifyOtp = async (req, res) => {
+  try {
+    const { email, otp } = req.body;
+
+    if (!email || !otp) {
+      throw new Error("Email and Otp are required for verification!");
+    }
+
+    const doesEmailMatch = await User.findOne({ email });
+
+    if (!doesEmailMatch) {
+      throw new Error("User isnot registered!");
+    }
+
+    const doesHaveOtp = await Otp.findOne({ email });
+
+    if (!doesHaveOtp) {
+      throw new Error("User doesn't have OTP!");
+    }
+
+    if (doesHaveOtp.otp !== otp) {
+      throw new Error("OTP doesn't match!");
+    }
+
+    res.status(200).json({ message: "OTP verified", data: doesHaveOtp });
+  } catch (error) {
+    console.log(error.message);
+    res.send(error.message);
+  }
+};
+
+const resetPassword = async (req, res) => {
+  try {
+    const { email, password } = req.body;
+
+    if (!email || !password) {
+      throw new Error("Email and Password are required!");
+    }
+
+    const doesUserExist = await User.findOne({ email });
+
+    if (!doesUserExist) {
+      throw new Error("User isnot registered!");
+    }
+
+    const data = await User.findOneAndUpdate(
+      { email },
+      {
+        password: password,
+      },
+      { new: true }
+    );
+
+    res.status(200).json({ message: "Password changed sucessfully!", data });
+  } catch (error) {
+    console.log(error.message);
+    res.send(error.message);
+  }
+};
+
+export { register, login, forgotPassword, verifyOtp, resetPassword };
