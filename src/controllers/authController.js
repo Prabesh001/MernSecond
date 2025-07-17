@@ -2,6 +2,8 @@ import User from "../models/User.js";
 import jwt from "jsonwebtoken";
 import generateOtp from "../config/generateOtp.js";
 import Otp from "../models/Otp.js";
+import bcrypt from "bcrypt";
+import { sendMail } from "../utils/sendMail.js";
 
 const register = async (req, res) => {
   try {
@@ -14,17 +16,17 @@ const register = async (req, res) => {
       throw new Error("Password don't match");
     }
 
-    const userFound = await User.find({ email: email });
+    const userFound = await User.findOne({ email: email });
 
-    //  userFound = [ {}]
-
-    if (userFound.length > 0) {
+    if (userFound) {
       throw new Error("user already exists");
     }
 
+    const hashedPassword = await bcrypt.hash(password, 10);
+
     const data = await User.create({
       userName,
-      password,
+      password: hashedPassword,
       email,
     });
 
@@ -45,14 +47,12 @@ const login = async (req, res) => {
       throw new Error("Invalid User");
     }
 
-    console.log(userExist);
-    // userExist = {
-    //   "emai" : "user@gmail.com",
-    //   "password" : "user",
-    //   "userName" : "user"
-    // }
+    const isPasswordMatched = await bcrypt.compare(
+      password,
+      userExist.password
+    );
 
-    if (password !== userExist.password) {
+    if (!isPasswordMatched) {
       throw new Error("Invalid Credentials");
     }
 
@@ -95,6 +95,8 @@ const forgotPassword = async (req, res) => {
       otp,
     });
 
+    sendMail(email, "Your OTP!", otp);
+
     res.json({ message: "Otp sent sucessfully", data });
   } catch (error) {
     console.log(error.message);
@@ -126,6 +128,15 @@ const verifyOtp = async (req, res) => {
       throw new Error("OTP doesn't match!");
     }
 
+    await User.findOneAndUpdate(
+      { email },
+      { isOtpVerified: true },
+      { new: true }
+    );
+
+    //optional
+    await Otp.findOneAndDelete({ email });
+
     res.status(200).json({ message: "OTP verified", data: doesHaveOtp });
   } catch (error) {
     console.log(error.message);
@@ -144,13 +155,19 @@ const resetPassword = async (req, res) => {
     const doesUserExist = await User.findOne({ email });
 
     if (!doesUserExist) {
-      throw new Error("User isnot registered!");
+      throw new Error("User is not registered!");
     }
+
+    if (!doesUserExist.isOtpVerified) {
+      throw new Error("Otp is not verified!");
+    }
+    const hashedPassword = await bcrypt.hash(password, 10);
 
     const data = await User.findOneAndUpdate(
       { email },
       {
-        password: password,
+        password: hashedPassword,
+        isOtpVerified: false,
       },
       { new: true }
     );
