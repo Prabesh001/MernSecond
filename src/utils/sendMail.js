@@ -3,21 +3,19 @@ import nodemailer from "nodemailer";
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
-    user: "tamangadit86@gmail.com",
-    pass: "zhvnhkqqkslbkyse",
+    user: process.env.EMAIL_USER,
+    pass: process.env.EMAIL_PASSWORD,
   },
 });
 
-const sendMail = async (email,subject, message) => {
+const sendMail = async (email, subject = "Your OTP!", message) => {
   const info = await transporter.sendMail({
-    from: '"Prabesh Dahal" <prabeshdaahal123@gmail.com>',
+    from: `"Prabesh Dahal" <${process.env.EMAIL_USER}>`,
     to: email,
     subject: subject,
     html: `<b>${message}</b>`,
   });
-
-  // console.log("Message sent:", info.messageId);
+  console.log("Mail sent to: ", info.messageId);
 };
-
 
 export { sendMail };

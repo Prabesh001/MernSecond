@@ -97,7 +97,7 @@ const forgotPassword = async (req, res) => {
 
     sendMail(email, "Your OTP!", otp);
 
-    res.json({ message: "Otp sent sucessfully", data });
+    res.json({ message: "Otp sent sucessfully" });
   } catch (error) {
     console.log(error.message);
     res.send(error.message);

@@ -4,9 +4,7 @@ import bcrypt from "bcrypt";
 
 const connectDb = async () => {
   try {
-    await mongoose.connect(
-      "mongodb+srv://prabeshdaahal123:Prabesh001@cluster0.dmtgt.mongodb.net/ecom?retryWrites=true&w=majority&appName=Cluster0"
-    );
+    await mongoose.connect(process.env.MONGO_URI);
     console.log("database connected successfully");
 
     const adminExist = await User.findOne({ role: "ADMIN" });
