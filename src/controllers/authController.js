@@ -6,20 +6,22 @@ import bcrypt from "bcrypt";
 import { sendMail } from "../utils/sendMail.js";
 
 const register = async (req, res) => {
+
+  console.log("first")
   try {
     const { userName, email, password, confirmPassword } = req.body;
 
     if (!userName || !email || !password || !confirmPassword) {
-      throw new Error("User Credientials Missing");
+      throw new Error("User Credientials Missing!");
     }
     if (password !== confirmPassword) {
-      throw new Error("Password don't match");
+      throw new Error("Password don't match!");
     }
 
     const userFound = await User.findOne({ email: email });
 
     if (userFound) {
-      throw new Error("user already exists");
+      throw new Error("User already exists.");
     }
 
     const hashedPassword = await bcrypt.hash(password, 10);
@@ -30,7 +32,7 @@ const register = async (req, res) => {
       email,
     });
 
-    res.status(200).json({ message: "user registered successful", data });
+    res.status(200).json({ message: "User registered successful", data });
   } catch (error) {
     console.log(error.message);
     res.status(400).send(error.message);
@@ -97,7 +99,7 @@ const forgotPassword = async (req, res) => {
 
     sendMail(email, "Your OTP!", otp);
 
-    res.json({ message: "Otp sent sucessfully" });
+    res.json({ message: "Otp sent sucessfully", otp });
   } catch (error) {
     console.log(error.message);
     res.send(error.message);
@@ -130,7 +132,7 @@ const verifyOtp = async (req, res) => {
 
     await User.findOneAndUpdate(
       { email },
-      { isOtpVerified: true },
+      { otpExpiryDate: new Date(Date.now() + 1 * 60 * 1000) },
       { new: true }
     );
 
@@ -158,8 +160,11 @@ const resetPassword = async (req, res) => {
       throw new Error("User is not registered!");
     }
 
-    if (!doesUserExist.isOtpVerified) {
-      throw new Error("Otp is not verified!");
+    if (
+      !doesUserExist.otpExpiryDate ||
+      new Date() > doesUserExist.otpExpiryDate
+    ) {
+      throw new Error("Otp is not verified or is already expired!");
     }
     const hashedPassword = await bcrypt.hash(password, 10);
 
@@ -167,7 +172,7 @@ const resetPassword = async (req, res) => {
       { email },
       {
         password: hashedPassword,
-        isOtpVerified: false,
+        otpExpiryDate: null,
       },
       { new: true }
     );

@@ -22,9 +22,9 @@ const User = mongoose.model(
         enum: ["CUSTOMER", "ADMIN"],
         default: "CUSTOMER",
       },
-      isOtpVerified: {
-        type: Boolean,
-        default: false,
+      otpExpiryDate: {
+        type: Date,
+        default: null,
       },
     },
     {
