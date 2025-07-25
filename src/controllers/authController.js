@@ -79,19 +79,6 @@ const login = async (req, res) => {
 };
 
 const forgotPassword = async (req, res) => {
-  
-  res.cookie("authToken", token, {
-    httpOnly: true,
-    maxAge: 60 * 60 * 5 * 1000,
-  });
-
-  const token = req.cookies.authToken;
-
-  res.clearCookie("authToken", {
-    httpOnly: true,
-    maxAge: 60 * 60 * 5 * 1000,
-  });
-
   try {
     const { email } = req.body;
 
@@ -115,7 +102,7 @@ const forgotPassword = async (req, res) => {
     sendMail(email, "Your OTP!", otp);
 
     res.cookie("email", email, {
-      maxAge: 1 * 60 * 60 * 1000,
+      maxAge: 5 * 60 * 60 * 1000,
       httpOnly: true,
     });
 
@@ -152,7 +139,7 @@ const verifyOtp = async (req, res) => {
 
     await User.findOneAndUpdate(
       { email },
-      { otpExpiryDate: new Date(Date.now() + 1 * 60 * 1000) },
+      { otpExpiryDate: new Date(Date.now() + 5 * 60 * 1000) },
       { new: true }
     );
 

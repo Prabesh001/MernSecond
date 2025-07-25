@@ -4,6 +4,7 @@ import authRoutes from "./routes/authRoute.js";
 import connectDb from "./config/database.js";
 import dotenv from "dotenv";
 import cors from "cors";
+import cookieParser from "cookie-parser";
 
 dotenv.config();
 
@@ -18,6 +19,7 @@ app.use(
 
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
+app.use(cookieParser());
 
 connectDb();
 app.use("/product", productRoutes);
