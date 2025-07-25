@@ -6,8 +6,7 @@ import bcrypt from "bcrypt";
 import { sendMail } from "../utils/sendMail.js";
 
 const register = async (req, res) => {
-
-  console.log("first")
+  console.log("first");
   try {
     const { userName, email, password, confirmPassword } = req.body;
 
@@ -67,7 +66,10 @@ const login = async (req, res) => {
 
     const token = jwt.sign(payload, "secretKey");
 
-    res.cookie("authToken", token);
+    res.cookie("authToken", token, {
+      httpOnly: true,
+      maxAge: 60 * 60 * 5 * 1000,
+    });
 
     res.status(200).json({ message: "userLoggedIN successfully", token });
   } catch (error) {
@@ -77,6 +79,19 @@ const login = async (req, res) => {
 };
 
 const forgotPassword = async (req, res) => {
+  
+  res.cookie("authToken", token, {
+    httpOnly: true,
+    maxAge: 60 * 60 * 5 * 1000,
+  });
+
+  const token = req.cookies.authToken;
+
+  res.clearCookie("authToken", {
+    httpOnly: true,
+    maxAge: 60 * 60 * 5 * 1000,
+  });
+
   try {
     const { email } = req.body;
 
@@ -99,10 +114,15 @@ const forgotPassword = async (req, res) => {
 
     sendMail(email, "Your OTP!", otp);
 
+    res.cookie("email", email, {
+      maxAge: 1 * 60 * 60 * 1000,
+      httpOnly: true,
+    });
+
     res.json({ message: "Otp sent sucessfully", otp });
   } catch (error) {
     console.log(error.message);
-    res.send(error.message);
+    res.status(400).send(error.message);
   }
 };
 
@@ -142,7 +162,7 @@ const verifyOtp = async (req, res) => {
     res.status(200).json({ message: "OTP verified", data: doesHaveOtp });
   } catch (error) {
     console.log(error.message);
-    res.send(error.message);
+    res.status(400).send(error.message);
   }
 };
 
@@ -180,7 +200,7 @@ const resetPassword = async (req, res) => {
     res.status(200).json({ message: "Password changed sucessfully!", data });
   } catch (error) {
     console.log(error.message);
-    res.send(error.message);
+    res.status(400).send(error.message);
   }
 };
 
