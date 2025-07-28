@@ -20,8 +20,8 @@ router.post("/forgot-password", forgotPassword);
 router.post("/verify-otp", verifyOtp);
 router.post("/reset-password", resetPassword);
 
-//verification
 
+//verification
 router.get("/verify/:step", async (req, res) => {
   const { step } = req.params;
 

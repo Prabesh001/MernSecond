@@ -1,7 +1,19 @@
 import Product from "../models/Product.js";
 
 const createProduct = async (req, res) => {
+
+  if(!req.file){
+    throw new Error("Image is Required")
+  }
+
   const { ram, rom, productName, description, price, gen, brand } = req.body;
+
+  
+
+   
+
+    const imageUrl = req.file.path
+    const imageName = req.file.filename
 
   try {
     // console.log(ram,rom,productName,description,price)
@@ -22,6 +34,8 @@ const createProduct = async (req, res) => {
       price: price,
       description: description,
       brand: brand,
+      imageUrl,
+      imageName
     });
     res.send(data);
   } catch (error) {

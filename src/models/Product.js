@@ -27,6 +27,12 @@ const productSchema = new mongoose.Schema(
     brand: {
       type: String,
     },
+    imageUrl : {
+      type : String
+    },
+    imageName : {
+        type : String
+    }
   },
   {
     timestamps: true,
