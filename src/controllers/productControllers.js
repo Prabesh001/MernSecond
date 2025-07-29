@@ -2,19 +2,14 @@ import { cloudinary } from "../config/cloudinary.js";
 import Product from "../models/Product.js";
 
 const createProduct = async (req, res) => {
-
-  if(!req.file){
-    throw new Error("Image is Required")
+  if (!req.file) {
+    throw new Error("Image is Required");
   }
 
   const { ram, rom, productName, description, price, gen, brand } = req.body;
 
-  
-
-   
-
-    const imageUrl = req.file.path
-    const imageName = req.file.filename
+  const imageUrl = req.file.path;
+  const imageName = req.file.filename;
 
   try {
     // console.log(ram,rom,productName,description,price)
@@ -36,7 +31,7 @@ const createProduct = async (req, res) => {
       description: description,
       brand: brand,
       imageUrl,
-      imageName
+      imageName,
     });
     res.send(data);
   } catch (error) {
@@ -129,16 +124,17 @@ const getProductById = async (req, res) => {
 const deleteProductById = async (req, res) => {
   try {
     const id = req.params.id;
-   const product = await Product.findById(id)
+    const product = await Product.findById(id);
 
-  //  {
-  //   produN : 
-  //   ram : 
-  //   imageNmae : 
-  //   imageUrl : 
-  //  }
-
-    cloudinary.uploader.destroy(product.imageName)
+    //  {
+    //   produN :
+    //   ram :
+    //   imageNmae :
+    //   imageUrl :
+    //  }
+    console.log(product);
+    const imageStatus = await cloudinary.uploader.destroy(product.imageName);
+    console.log(imageStatus);
     const data = await Product.findByIdAndDelete(id);
     res.status(200).json({ message: "Product deletes Successfully" });
   } catch (error) {
@@ -149,7 +145,17 @@ const deleteProductById = async (req, res) => {
 const updateProduct = async (req, res) => {
   try {
     const id = req.params.id;
+
     //   const {ram,rom,productName,gen,price,brand} = req.body
+    const product = await Product.findById(id)
+
+      if(req.file){
+          cloudinary.uploader.destroy(product.imageName)
+          const imageUrl = req.file.path;
+           const imageName = req.file.filename;
+           req.body.imageUrl = imageUrl
+           req.body.imageName = imageName
+      }
 
     const data = await Product.findByIdAndUpdate(id, req.body, { new: true });
     res.status(200).json({ data, message: "prduct updated succcessfully" });
