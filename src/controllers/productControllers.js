@@ -1,3 +1,4 @@
+import { cloudinary } from "../config/cloudinary.js";
 import Product from "../models/Product.js";
 
 const createProduct = async (req, res) => {
@@ -128,6 +129,16 @@ const getProductById = async (req, res) => {
 const deleteProductById = async (req, res) => {
   try {
     const id = req.params.id;
+   const product = await Product.findById(id)
+
+  //  {
+  //   produN : 
+  //   ram : 
+  //   imageNmae : 
+  //   imageUrl : 
+  //  }
+
+    cloudinary.uploader.destroy(product.imageName)
     const data = await Product.findByIdAndDelete(id);
     res.status(200).json({ message: "Product deletes Successfully" });
   } catch (error) {
