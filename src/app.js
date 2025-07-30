@@ -22,7 +22,7 @@ app.use(express.urlencoded({ extended: true }));
 app.use(cookieParser());
 
 connectDb();
-app.use("/product", productRoutes);
+app.use("/api/product", productRoutes);
 app.use("/api/auth", authRoutes);
 
 const PORT = 4000;
